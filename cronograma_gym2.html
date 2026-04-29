@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cronograma de Entrenamiento — Plan 5 Meses</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;900&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a; --dark: #111; --card: #181818; --border: #252525;
+    --red: #E53935; --red-dark: #b71c1c; --red-glow: rgba(229,57,53,0.15);
+    --yellow: #FFD600; --green: #4CAF50; --green-glow: rgba(76,175,80,0.15);
+    --blue: #29B6F6; --white: #f5f5f5; --gray: #888; --light-gray: #aaa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'Barlow',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+  /* HEADER */
+  .header { position:relative; padding:50px 40px 36px; border-bottom:1px solid var(--border); overflow:hidden; }
+  .header::after { content:'GYM'; position:absolute; right:-20px; top:-30px; font-family:'Bebas Neue',sans-serif; font-size:220px; color:rgba(255,255,255,0.02); pointer-events:none; }
+  .header-tag { display:inline-block; background:var(--red); color:white; font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; padding:4px 12px; margin-bottom:14px; }
+  .header h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(44px,7vw,86px); line-height:0.9; letter-spacing:2px; }
+  .header h1 span { color:var(--red); }
+  .header-sub { margin-top:14px; font-size:14px; color:var(--gray); max-width:600px; }
+  .stats-row { display:flex; gap:36px; margin-top:28px; flex-wrap:wrap; }
+  .stat { display:flex; flex-direction:column; gap:3px; }
+  .stat-num { font-family:'Bebas Neue',sans-serif; font-size:34px; color:var(--red); line-height:1; }
+  .stat-label { font-size:11px; color:var(--gray); text-transform:uppercase; letter-spacing:2px; font-weight:600; }
+
+  /* NAV */
+  .week-nav { display:flex; padding:0 40px; border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+  .week-nav::-webkit-scrollbar { display:none; }
+  .day-tab { flex-shrink:0; padding:16px 22px; cursor:pointer; border-bottom:3px solid transparent; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; letter-spacing:2px; text-transform:uppercase; color:var(--gray); transition:all 0.2s; }
+  .day-tab:hover { color:var(--white); }
+  .day-tab.active { color:var(--white); border-bottom-color:var(--red); }
+  .rest-badge { display:inline-block; background:#1a1a1a; color:var(--gray); font-size:9px; padding:1px 5px; margin-left:6px; }
+
+  /* CONTENT */
+  .content { padding:36px 40px; }
+  .day-panel { display:none; }
+  .day-panel.active { display:block; }
+  .day-name { font-family:'Bebas Neue',sans-serif; font-size:50px; letter-spacing:2px; margin-bottom:4px; }
+  .day-focus { font-size:13px; color:var(--red); text-transform:uppercase; letter-spacing:3px; font-weight:700; font-family:'Barlow Condensed',sans-serif; margin-bottom:10px; }
+  .day-meta { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+  .meta-pill { background:var(--card); border:1px solid var(--border); padding:5px 14px; font-size:12px; color:var(--light-gray); font-weight:600; letter-spacing:1px; }
+  .meta-pill.highlight { background:var(--red-glow); border-color:var(--red); color:var(--red); }
+
+  /* INTENSITY */
+  .intensity-bar { margin-bottom:28px; }
+  .intensity-label { display:flex; justify-content:space-between; margin-bottom:8px; }
+  .intensity-label span { font-size:11px; color:var(--gray); text-transform:uppercase; letter-spacing:2px; font-weight:600; font-family:'Barlow Condensed',sans-serif; }
+  .intensity-label strong { color:var(--red); }
+  .bar-track { height:4px; background:var(--border); }
+  .bar-fill { height:100%; background:linear-gradient(90deg,var(--red-dark),var(--red)); position:relative; }
+  .bar-fill::after { content:''; position:absolute; right:0; top:50%; transform:translateY(-50%); width:10px; height:10px; background:var(--red); border-radius:50%; box-shadow:0 0 12px var(--red); }
+
+  /* TIMELINE */
+  .timeline { display:flex; gap:8px; margin-bottom:32px; flex-wrap:wrap; }
+  .timeline-block { flex:1; min-width:80px; background:var(--card); border:1px solid var(--border); padding:12px; text-align:center; border-top:3px solid var(--border); }
+  .timeline-block.warm { border-top-color:#FF9800; }
+  .timeline-block.strength { border-top-color:var(--red); }
+  .timeline-block.cardio { border-top-color:var(--blue); }
+  .timeline-block.stretch { border-top-color:#66BB6A; }
+  .tblock-time { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; }
+  .tblock-label { font-size:10px; color:var(--gray); text-transform:uppercase; letter-spacing:1.5px; margin-top:4px; font-weight:600; }
+  .tblock-dur { font-size:11px; color:var(--light-gray); margin-top:5px; }
+
+  /* SECTION TITLE */
+  .section-title { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--gray); margin-bottom:18px; display:flex; align-items:center; gap:12px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* EXERCISE GRID */
+  .exercise-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:32px; }
+
+  /* EXERCISE CARD */
+  .exercise-card { background:var(--card); border:1px solid var(--border); overflow:hidden; transition:border-color 0.2s,transform 0.2s; }
+  .exercise-card:hover { border-color:var(--red); transform:translateY(-2px); }
+  .exercise-img-wrap { position:relative; height:190px; overflow:hidden; background:#111; }
+  .exercise-img-wrap img { width:100%; height:100%; object-fit:cover; object-position:center top; transition:transform 0.4s; filter:grayscale(20%) contrast(1.1); }
+  .exercise-card:hover .exercise-img-wrap img { transform:scale(1.05); }
+  .exercise-num { position:absolute; top:10px; left:10px; background:var(--red); color:white; font-family:'Bebas Neue',sans-serif; font-size:18px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; }
+  .muscle-tag { position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.82); color:var(--yellow); font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:3px 8px; font-family:'Barlow Condensed',sans-serif; }
+  .img-fallback { width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1a1a1a,#0f0f0f); flex-direction:column; gap:8px; }
+  .img-fallback-icon { font-size:44px; }
+  .img-fallback-text { font-size:11px; color:var(--gray); letter-spacing:2px; text-transform:uppercase; }
+
+  .exercise-body { padding:14px 16px 16px; }
+  .exercise-name { font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:700; margin-bottom:8px; }
+  .exercise-sets { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+  .set-badge { background:#1e1e1e; border:1px solid var(--border); padding:3px 10px; font-size:11px; font-weight:700; color:var(--light-gray); font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; }
+  .set-badge.red { border-color:var(--red); color:var(--red); background:var(--red-glow); }
+  .exercise-tip { font-size:12px; color:var(--gray); line-height:1.5; border-left:2px solid var(--border); padding-left:10px; font-style:italic; margin-bottom:14px; }
+
+  /* ===== WEIGHT TRACKER ===== */
+  .weight-tracker { background:#0f0f0f; border:1px solid var(--border); border-top:2px solid var(--green); padding:12px; }
+  .tracker-title { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--green); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .tracker-title::before { content:''; width:6px; height:6px; background:var(--green); border-radius:50%; }
+  .series-inputs { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px; }
+  .serie-input-wrap { display:flex; flex-direction:column; gap:3px; }
+  .serie-label { font-size:9px; color:var(--gray); text-transform:uppercase; letter-spacing:1px; font-weight:700; font-family:'Barlow Condensed',sans-serif; text-align:center; }
+  .serie-input { background:#1a1a1a; border:1px solid var(--border); color:var(--white); font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; text-align:center; padding:6px 4px; width:100%; outline:none; transition:border-color 0.2s; -moz-appearance:textfield; }
+  .serie-input::-webkit-outer-spin-button,
+  .serie-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+  .serie-input:focus { border-color:var(--green); }
+  .serie-input::placeholder { color:#333; font-size:12px; }
+  .tracker-actions { display:flex; gap:8px; align-items:center; }
+  .btn-save { background:var(--green); color:#000; font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; border:none; padding:7px 14px; cursor:pointer; transition:opacity 0.2s; flex:1; }
+  .btn-save:hover { opacity:0.85; }
+  .btn-history { background:transparent; color:var(--gray); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; border:1px solid var(--border); padding:7px 12px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .btn-history:hover { border-color:var(--gray); color:var(--white); }
+  .save-feedback { font-size:10px; color:var(--green); letter-spacing:1px; text-transform:uppercase; font-weight:700; font-family:'Barlow Condensed',sans-serif; opacity:0; transition:opacity 0.3s; margin-top:6px; }
+  .save-feedback.show { opacity:1; }
+
+  /* HISTORY PANEL */
+  .history-panel { display:none; background:#0a0a0a; border:1px solid var(--border); border-top:none; padding:12px; }
+  .history-panel.open { display:block; }
+  .history-title { font-size:10px; color:var(--gray); text-transform:uppercase; letter-spacing:2px; font-weight:700; font-family:'Barlow Condensed',sans-serif; margin-bottom:10px; }
+  .history-empty { font-size:12px; color:var(--gray); font-style:italic; }
+  .history-entry { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #1a1a1a; }
+  .history-entry:last-child { border-bottom:none; }
+  .history-date { font-size:11px; color:var(--gray); font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; }
+  .history-weights { display:flex; gap:6px; flex-wrap:wrap; }
+  .history-weight-badge { background:#1a1a1a; border:1px solid #2a2a2a; padding:2px 8px; font-size:11px; font-weight:700; color:var(--light-gray); font-family:'Barlow Condensed',sans-serif; }
+  .history-weight-badge.best { border-color:var(--yellow); color:var(--yellow); }
+  .history-pr { font-size:9px; color:var(--yellow); text-transform:uppercase; letter-spacing:1px; font-weight:700; font-family:'Barlow Condensed',sans-serif; }
+  .btn-del-history { background:transparent; border:none; color:#333; cursor:pointer; font-size:12px; padding:2px 6px; transition:color 0.2s; }
+  .btn-del-history:hover { color:var(--red); }
+
+  /* CARDIO CARD */
+  .cardio-card { background:var(--card); border:1px solid var(--border); border-left:4px solid var(--blue); padding:22px; margin-bottom:32px; }
+  .cardio-title { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .cardio-protocol { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:14px; }
+  .protocol-item { background:#0f0f0f; border:1px solid var(--border); padding:12px; text-align:center; }
+  .protocol-val { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--blue); letter-spacing:1px; }
+  .protocol-label { font-size:10px; color:var(--gray); text-transform:uppercase; letter-spacing:2px; margin-top:4px; font-weight:600; }
+
+  /* SUMMARY BAR */
+  .session-summary { background:var(--card); border:1px solid var(--border); border-top:2px solid var(--yellow); padding:18px 20px; margin-bottom:32px; display:flex; gap:20px; flex-wrap:wrap; align-items:center; }
+  .summary-title { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--yellow); flex:100%; margin-bottom:4px; }
+  .summary-stat { display:flex; flex-direction:column; gap:2px; min-width:80px; }
+  .summary-stat-val { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--white); line-height:1; }
+  .summary-stat-label { font-size:10px; color:var(--gray); text-transform:uppercase; letter-spacing:1.5px; font-weight:600; }
+  .btn-clear-session { background:transparent; border:1px solid #2a2a2a; color:var(--gray); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; cursor:pointer; transition:all 0.2s; margin-left:auto; }
+  .btn-clear-session:hover { border-color:var(--red); color:var(--red); }
+
+  /* REST DAY */
+  .rest-day { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 40px; text-align:center; }
+  .rest-icon { font-size:80px; margin-bottom:20px; }
+  .rest-title { font-family:'Bebas Neue',sans-serif; font-size:60px; letter-spacing:4px; color:rgba(255,255,255,0.1); margin-bottom:14px; }
+  .rest-desc { max-width:500px; font-size:15px; color:var(--gray); line-height:1.7; }
+  .rest-allowed { display:flex; gap:10px; margin-top:28px; flex-wrap:wrap; justify-content:center; }
+  .rest-item { background:var(--card); border:1px solid var(--border); padding:10px 18px; font-size:13px; color:var(--light-gray); font-weight:500; }
+
+  /* FOOTER */
+  .footer { border-top:1px solid var(--border); padding:22px 40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  .footer-text { font-size:12px; color:var(--gray); }
+  .footer-meta { font-family:'Barlow Condensed',sans-serif; font-size:12px; color:var(--gray); letter-spacing:2px; text-transform:uppercase; }
+
+  /* ANIMATIONS */
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  .day-panel.active .exercise-card { animation:fadeInUp 0.35s ease both; }
+  .day-panel.active .exercise-card:nth-child(1){animation-delay:.04s}
+  .day-panel.active .exercise-card:nth-child(2){animation-delay:.08s}
+  .day-panel.active .exercise-card:nth-child(3){animation-delay:.12s}
+  .day-panel.active .exercise-card:nth-child(4){animation-delay:.16s}
+  .day-panel.active .exercise-card:nth-child(5){animation-delay:.20s}
+  .day-panel.active .exercise-card:nth-child(6){animation-delay:.24s}
+  .day-panel.active .exercise-card:nth-child(7){animation-delay:.28s}
+  .day-panel.active .exercise-card:nth-child(8){animation-delay:.32s}
+
+  @media(max-width:768px){
+    .header,.content{padding:24px 20px}
+    .week-nav{padding:0 20px}
+    .exercise-grid{grid-template-columns:1fr}
+    .series-inputs{grid-template-columns:repeat(2,1fr)}
+    .footer{padding:20px}
+    .stats-row{gap:20px}
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-tag">Plan Alto Rendimiento — 5 Meses</div>
+  <h1>CRONOGRAMA<br><span>DE ENTRENAMIENTO</span></h1>
+  <p class="header-sub">2 horas diarias · 6 días activos · Objetivo: −13kg · Registro de pesos por sesión</p>
+  <div class="stats-row">
+    <div class="stat"><span class="stat-num">2H</span><span class="stat-label">Por sesión</span></div>
+    <div class="stat"><span class="stat-num">6</span><span class="stat-label">Días activos</span></div>
+    <div class="stat"><span class="stat-num">13KG</span><span class="stat-label">Meta a perder</span></div>
+    <div class="stat"><span class="stat-num" id="total-sessions-header">0</span><span class="stat-label">Sesiones registradas</span></div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="week-nav">
+  <div class="day-tab active" onclick="showDay('lunes',this)">Lunes</div>
+  <div class="day-tab" onclick="showDay('martes',this)">Martes</div>
+  <div class="day-tab" onclick="showDay('miercoles',this)">Miércoles</div>
+  <div class="day-tab" onclick="showDay('jueves',this)">Jueves</div>
+  <div class="day-tab" onclick="showDay('viernes',this)">Viernes</div>
+  <div class="day-tab" onclick="showDay('sabado',this)">Sábado</div>
+  <div class="day-tab" onclick="showDay('domingo',this)">Domingo <span class="rest-badge">DESCANSO</span></div>
+</nav>
+
+<main class="content">
+
+<!-- ===== LUNES ===== -->
+<div class="day-panel active" id="panel-lunes">
+  <div class="day-name">LUNES</div>
+  <div class="day-focus">💪 Empuje — Pecho · Hombros · Tríceps</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Alta intensidad</span>
+    <span class="meta-pill">7 ejercicios</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>85%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:85%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">HIIT</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+
+  <!-- SESSION SUMMARY -->
+  <div class="session-summary" id="summary-lunes">
+    <div class="summary-title">📊 Resumen de sesión — Lunes</div>
+    <div class="summary-stat"><div class="summary-stat-val" id="sum-lunes-exercises">0/7</div><div class="summary-stat-label">Ejercicios registrados</div></div>
+    <div class="summary-stat"><div class="summary-stat-val" id="sum-lunes-vol">0 kg</div><div class="summary-stat-label">Volumen total estimado</div></div>
+    <div class="summary-stat"><div class="summary-stat-val" id="sum-lunes-max">— kg</div><div class="summary-stat-label">Mayor peso del día</div></div>
+    <button class="btn-clear-session" onclick="clearDaySession('lunes')">Limpiar sesión</button>
+  </div>
+
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios</div>
+  <div class="exercise-grid">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1534368420009-621bfab424a8?w=600&q=80" alt="Press de banca" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Press de Banca</div></div>'">
+        <div class="exercise-num">1</div><div class="muscle-tag">Pecho</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press de Banca con Barra</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10–12 Reps</span><span class="set-badge">90 seg</span></div>
+        <div class="exercise-tip">Peso que te cueste las últimas 2 reps. Escápulas retraídas en el banco.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex1" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex1" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex1" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex1" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('lunes-ex1','lunes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('lunes-ex1')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-lunes-ex1">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-lunes-ex1"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80" alt="Press inclinado" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Press Inclinado</div></div>'">
+        <div class="exercise-num">2</div><div class="muscle-tag">Pecho Superior</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press Inclinado Mancuernas</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg</span></div>
+        <div class="exercise-tip">30–45 grados de inclinación. No bloquees los codos arriba.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex2" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex2" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex2" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('lunes-ex2','lunes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('lunes-ex2')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-lunes-ex2">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-lunes-ex2"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=80" alt="Aperturas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤸</div><div class=\'img-fallback-text\'>Aperturas</div></div>'">
+        <div class="exercise-num">3</div><div class="muscle-tag">Pecho</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Aperturas con Mancuernas</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Movimiento lento y controlado. Codos ligeramente flexionados.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex3" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex3" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex3" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('lunes-ex3','lunes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('lunes-ex3')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-lunes-ex3">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-lunes-ex3"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1567598508481-65985588e295?w=600&q=80" alt="Press militar" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Press Militar</div></div>'">
+        <div class="exercise-num">4</div><div class="muscle-tag">Hombros</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press Militar con Barra</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10 Reps</span><span class="set-badge">90 seg</span></div>
+        <div class="exercise-tip">Core activado. No arquees la espalda baja.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex4" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex4" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex4" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex4" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('lunes-ex4','lunes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('lunes-ex4')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-lunes-ex4">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-lunes-ex4"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1597452485677-d661670d9640?w=600&q=80" alt="Elevaciones laterales" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🙆</div><div class=\'img-fallback-text\'>Elevaciones Laterales</div></div>'">
+        <div class="exercise-num">5</div><div class="muscle-tag">Deltoides Lateral</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Elevaciones Laterales</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Peso ligero, forma perfecta. Codos ligeramente doblados.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex5" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex5" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex5" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('lunes-ex5','lunes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('lunes-ex5')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-lunes-ex5">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-lunes-ex5"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1590507621108-433608c97823?w=600&q=80" alt="Extensiones tríceps" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Extensiones Tríceps</div></div>'">
+        <div class="exercise-num">6</div><div class="muscle-tag">Tríceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Extensiones de Tríceps en Polea</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Codos fijos a los costados. Contrae al máximo al extender.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex6" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex6" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex6" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('lunes-ex6','lunes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('lunes-ex6')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-lunes-ex6">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-lunes-ex6"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80" alt="Fondos en banco" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤾</div><div class=\'img-fallback-text\'>Fondos en Banco</div></div>'">
+        <div class="exercise-num">7</div><div class="muscle-tag">Tríceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Fondos en Banco</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12–15 Reps</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Si puedes, añade peso en las piernas. Baja hasta 90° en el codo.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Peso adicional en piernas (kg) — 0 si es solo cuerpo</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex7" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex7" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="lunes" data-exercise="lunes-ex7" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('lunes-ex7','lunes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('lunes-ex7')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-lunes-ex7">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-lunes-ex7"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Cardio Metabólico — HIIT Caminadora</div>
+  <div class="cardio-card">
+    <div class="cardio-title">HIIT EN CAMINADORA</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">5 min calentamiento → 20 min HIIT (40s sprint / 20s recuperación × 20 ciclos) → 5 min enfriamiento</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">40s</div><div class="protocol-label">Sprint</div></div>
+      <div class="protocol-item"><div class="protocol-val">20s</div><div class="protocol-label">Recuperación</div></div>
+      <div class="protocol-item"><div class="protocol-val">20</div><div class="protocol-label">Ciclos</div></div>
+      <div class="protocol-item"><div class="protocol-val">10–11</div><div class="protocol-label">km/h sprint mes 1</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MARTES ===== -->
+<div class="day-panel" id="panel-martes">
+  <div class="day-name">MARTES</div>
+  <div class="day-focus">🔙 Jalón — Espalda · Bíceps</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Alta intensidad</span>
+    <span class="meta-pill">7 ejercicios</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>80%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:80%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Cardio Estable</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="session-summary" id="summary-martes">
+    <div class="summary-title">📊 Resumen de sesión — Martes</div>
+    <div class="summary-stat"><div class="summary-stat-val" id="sum-martes-exercises">0/7</div><div class="summary-stat-label">Ejercicios registrados</div></div>
+    <div class="summary-stat"><div class="summary-stat-val" id="sum-martes-vol">0 kg</div><div class="summary-stat-label">Volumen total estimado</div></div>
+    <div class="summary-stat"><div class="summary-stat-val" id="sum-martes-max">— kg</div><div class="summary-stat-label">Mayor peso del día</div></div>
+    <button class="btn-clear-session" onclick="clearDaySession('martes')">Limpiar sesión</button>
+  </div>
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios</div>
+  <div class="exercise-grid" id="grid-martes">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=80" alt="Jalón al pecho" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Jalón al Pecho</div></div>'">
+        <div class="exercise-num">1</div><div class="muscle-tag">Dorsal</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Jalón al Pecho en Polea</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10–12 Reps</span><span class="set-badge">90 seg</span></div>
+        <div class="exercise-tip">Pecho arriba, escápulas juntas al bajar. Sin impulso del cuerpo.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex1" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex1" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex1" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex1" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('martes-ex1','martes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('martes-ex1')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-martes-ex1">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-martes-ex1"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=600&q=80" alt="Remo con barra" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Remo con Barra</div></div>'">
+        <div class="exercise-num">2</div><div class="muscle-tag">Espalda Media</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Remo con Barra</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10 Reps</span><span class="set-badge">90 seg</span></div>
+        <div class="exercise-tip">Espalda recta, codos pegados. Jala al ombligo, no al pecho.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex2" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex2" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex2" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex2" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('martes-ex2','martes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('martes-ex2')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-martes-ex2">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-martes-ex2"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=80" alt="Remo unilateral" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Remo Unilateral</div></div>'">
+        <div class="exercise-num">3</div><div class="muscle-tag">Dorsal</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Remo Unilateral con Mancuerna</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps c/lado</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Apoyo en banco, rango completo. Rota el torso al final.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex3" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex3" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex3" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('martes-ex3','martes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('martes-ex3')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-martes-ex3">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-martes-ex3"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1566241134883-13eb2393a3cd?w=600&q=80" alt="Pullover" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤸</div><div class=\'img-fallback-text\'>Pullover</div></div>'">
+        <div class="exercise-num">4</div><div class="muscle-tag">Dorsal Completo</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Pullover con Mancuerna</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Estira el dorsal completamente. Codos ligeramente doblados.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex4" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex4" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex4" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('martes-ex4','martes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('martes-ex4')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-martes-ex4">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-martes-ex4"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=600&q=80" alt="Jalón agarre neutro" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Jalón Neutro</div></div>'">
+        <div class="exercise-num">5</div><div class="muscle-tag">Espalda Media</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Jalón con Agarre Neutro</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg</span></div>
+        <div class="exercise-tip">Palmas enfrentadas. Activa más bíceps y espalda media.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex5" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex5" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex5" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('martes-ex5','martes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('martes-ex5')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-martes-ex5">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-martes-ex5"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1585152968992-d2b9444408cc?w=600&q=80" alt="Curl barra" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Curl Barra</div></div>'">
+        <div class="exercise-num">6</div><div class="muscle-tag">Bíceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Curl con Barra</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Sin balanceo. Codos fijos a los costados. Aprieta arriba.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex6" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex6" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex6" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('martes-ex6','martes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('martes-ex6')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-martes-ex6">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-martes-ex6"></div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=80" alt="Curl martillo" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🔨</div><div class=\'img-fallback-text\'>Curl Martillo</div></div>'">
+        <div class="exercise-num">7</div><div class="muscle-tag">Braquial</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Curl Martillo con Mancuernas</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg</span></div>
+        <div class="exercise-tip">Palmas enfrentadas durante todo el movimiento.</div>
+        <div class="weight-tracker">
+          <div class="tracker-title">Registro de peso (kg por serie)</div>
+          <div class="series-inputs" style="grid-template-columns:repeat(3,1fr)">
+            <div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex7" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex7" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div>
+            <div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="martes" data-exercise="martes-ex7" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div>
+          </div>
+          <div class="tracker-actions">
+            <button class="btn-save" onclick="saveExercise('martes-ex7','martes')">💾 Guardar</button>
+            <button class="btn-history" onclick="toggleHistory('martes-ex7')">📈 Historial</button>
+          </div>
+          <div class="save-feedback" id="feedback-martes-ex7">✓ Guardado correctamente</div>
+        </div>
+        <div class="history-panel" id="history-martes-ex7"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="section-title">Cardio — Estado Estable</div>
+  <div class="cardio-card">
+    <div class="cardio-title">BICICLETA ESTÁTICA — ESTADO ESTABLE</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">30 minutos a ritmo constante. FC objetivo: 130–145 ppm. La espalda ya trabajó duro — sin HIIT hoy.</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">30'</div><div class="protocol-label">Duración</div></div>
+      <div class="protocol-item"><div class="protocol-val">130</div><div class="protocol-label">FC mínima</div></div>
+      <div class="protocol-item"><div class="protocol-val">145</div><div class="protocol-label">FC máxima</div></div>
+      <div class="protocol-item"><div class="protocol-val">Cte.</div><div class="protocol-label">Ritmo</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MIÉRCOLES, JUEVES, VIERNES, SÁBADO — Estructura resumida con trackers -->
+<div class="day-panel" id="panel-miercoles">
+  <div class="day-name">MIÉRCOLES</div>
+  <div class="day-focus">🦵 Piernas — Cuádriceps · Isquios · Glúteos</div>
+  <div class="day-meta"><span class="meta-pill highlight">⏱ 2 horas</span><span class="meta-pill">🔥 Máxima intensidad</span><span class="meta-pill">7 ejercicios</span></div>
+  <div class="intensity-bar"><div class="intensity-label"><span>Intensidad del día</span><strong>95%</strong></div><div class="bar-track"><div class="bar-fill" style="width:95%"></div></div></div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Elíptica</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="session-summary"><div class="summary-title">📊 Resumen de sesión — Miércoles</div><div class="summary-stat"><div class="summary-stat-val" id="sum-miercoles-exercises">0/7</div><div class="summary-stat-label">Registrados</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-miercoles-vol">0 kg</div><div class="summary-stat-label">Volumen estimado</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-miercoles-max">— kg</div><div class="summary-stat-label">Mayor peso</div></div><button class="btn-clear-session" onclick="clearDaySession('miercoles')">Limpiar sesión</button></div>
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios · El día más importante para quemar grasa</div>
+  <div class="exercise-grid">
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=600&q=80" alt="Sentadilla" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Sentadilla</div></div>'"><div class="exercise-num">1</div><div class="muscle-tag">Cuádriceps · Glúteos</div></div><div class="exercise-body"><div class="exercise-name">Sentadilla con Barra</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10–12 Reps</span><span class="set-badge">2 min</span></div><div class="exercise-tip">El más importante del plan. Rodillas alineadas, pecho arriba.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex1" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex1" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex1" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex1" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('miercoles-ex1','miercoles')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('miercoles-ex1')">📈 Historial</button></div><div class="save-feedback" id="feedback-miercoles-ex1">✓ Guardado correctamente</div></div><div class="history-panel" id="history-miercoles-ex1"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=600&q=80" alt="Peso muerto rumano" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Peso Muerto Rumano</div></div>'"><div class="exercise-num">2</div><div class="muscle-tag">Isquios · Glúteos</div></div><div class="exercise-body"><div class="exercise-name">Peso Muerto Rumano</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10 Reps</span><span class="set-badge">90 seg</span></div><div class="exercise-tip">Barra cerca del cuerpo. Empuja cadera hacia atrás.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex2" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex2" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex2" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex2" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('miercoles-ex2','miercoles')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('miercoles-ex2')">📈 Historial</button></div><div class="save-feedback" id="feedback-miercoles-ex2">✓ Guardado correctamente</div></div><div class="history-panel" id="history-miercoles-ex2"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=600&q=80" alt="Prensa" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦵</div><div class=\'img-fallback-text\'>Prensa de Piernas</div></div>'"><div class="exercise-num">3</div><div class="muscle-tag">Cuádriceps</div></div><div class="exercise-body"><div class="exercise-name">Prensa de Piernas</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12–15 Reps</span><span class="set-badge">90 seg</span></div><div class="exercise-tip">Pies al ancho de hombros. No bloquees las rodillas.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex3" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex3" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex3" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('miercoles-ex3','miercoles')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('miercoles-ex3')">📈 Historial</button></div><div class="save-feedback" id="feedback-miercoles-ex3">✓ Guardado correctamente</div></div><div class="history-panel" id="history-miercoles-ex3"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1434608519344-49d77a699e1d?w=600&q=80" alt="Zancadas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🚶</div><div class=\'img-fallback-text\'>Zancadas</div></div>'"><div class="exercise-num">4</div><div class="muscle-tag">Glúteos · Cuádriceps</div></div><div class="exercise-body"><div class="exercise-name">Zancadas con Mancuernas</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 c/pierna</span><span class="set-badge">75 seg</span></div><div class="exercise-tip">Paso largo, rodilla no pasa la punta del pie.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie — mancuerna cada mano)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex4" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex4" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex4" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('miercoles-ex4','miercoles')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('miercoles-ex4')">📈 Historial</button></div><div class="save-feedback" id="feedback-miercoles-ex4">✓ Guardado correctamente</div></div><div class="history-panel" id="history-miercoles-ex4"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1577221084712-45b0445d2b00?w=600&q=80" alt="Extensión cuádriceps" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦵</div><div class=\'img-fallback-text\'>Extensión Cuádriceps</div></div>'"><div class="exercise-num">5</div><div class="muscle-tag">Cuádriceps</div></div><div class="exercise-body"><div class="exercise-name">Extensión de Cuádriceps</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Pausa 1 segundo arriba. Baja lentamente 3 segundos.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex5" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex5" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex5" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('miercoles-ex5','miercoles')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('miercoles-ex5')">📈 Historial</button></div><div class="save-feedback" id="feedback-miercoles-ex5">✓ Guardado correctamente</div></div><div class="history-panel" id="history-miercoles-ex5"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=80" alt="Curl isquios" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦵</div><div class=\'img-fallback-text\'>Curl Isquios</div></div>'"><div class="exercise-num">6</div><div class="muscle-tag">Isquiotibiales</div></div><div class="exercise-body"><div class="exercise-name">Curl de Isquiotibiales</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Caderas pegadas. Movimiento lento en bajada.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex6" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex6" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex6" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('miercoles-ex6','miercoles')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('miercoles-ex6')">📈 Historial</button></div><div class="save-feedback" id="feedback-miercoles-ex6">✓ Guardado correctamente</div></div><div class="history-panel" id="history-miercoles-ex6"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&q=80" alt="Gemelos" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦶</div><div class=\'img-fallback-text\'>Elevación Gemelos</div></div>'"><div class="exercise-num">7</div><div class="muscle-tag">Gemelos</div></div><div class="exercise-body"><div class="exercise-name">Elevación de Gemelos de Pie</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">20 Reps</span><span class="set-badge">45 seg</span></div><div class="exercise-tip">Rango completo. Pausa 2 seg arriba. Baja lentamente.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso adicional (kg) — 0 si es solo cuerpo</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex7" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex7" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex7" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="miercoles" data-exercise="miercoles-ex7" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('miercoles-ex7','miercoles')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('miercoles-ex7')">📈 Historial</button></div><div class="save-feedback" id="feedback-miercoles-ex7">✓ Guardado correctamente</div></div><div class="history-panel" id="history-miercoles-ex7"></div></div></div>
+  </div>
+  <div class="section-title">Cardio — Recuperación Activa</div>
+  <div class="cardio-card"><div class="cardio-title">ELÍPTICA O CAMINATA INCLINADA</div><p style="font-size:14px;color:var(--gray);line-height:1.6;">Sin HIIT hoy. Piernas agotadas. Elíptica o caminata al 10% durante 30 minutos suaves.</p><div class="cardio-protocol"><div class="protocol-item"><div class="protocol-val">30'</div><div class="protocol-label">Duración</div></div><div class="protocol-item"><div class="protocol-val">10%</div><div class="protocol-label">Inclinación</div></div><div class="protocol-item"><div class="protocol-val">5.5</div><div class="protocol-label">km/h</div></div><div class="protocol-item"><div class="protocol-val">Suave</div><div class="protocol-label">Intensidad</div></div></div></div>
+</div>
+
+<!-- JUEVES, VIERNES, SÁBADO — Panels simplificados con misma estructura de trackers -->
+<div class="day-panel" id="panel-jueves">
+  <div class="day-name">JUEVES</div>
+  <div class="day-focus">💪 Empuje II — Hombros · Pecho · Tríceps</div>
+  <div class="day-meta"><span class="meta-pill highlight">⏱ 2 horas</span><span class="meta-pill">🔥 Alta intensidad</span><span class="meta-pill">7 ejercicios</span></div>
+  <div class="intensity-bar"><div class="intensity-label"><span>Intensidad del día</span><strong>80%</strong></div><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div></div>
+  <div class="timeline"><div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div><div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div><div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Incline Walk</div><div class="tblock-dur">30 min</div></div><div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div></div>
+  <div class="session-summary"><div class="summary-title">📊 Resumen de sesión — Jueves</div><div class="summary-stat"><div class="summary-stat-val" id="sum-jueves-exercises">0/7</div><div class="summary-stat-label">Registrados</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-jueves-vol">0 kg</div><div class="summary-stat-label">Volumen estimado</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-jueves-max">— kg</div><div class="summary-stat-label">Mayor peso</div></div><button class="btn-clear-session" onclick="clearDaySession('jueves')">Limpiar sesión</button></div>
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios</div>
+  <div class="exercise-grid">
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80" alt="Press mancuernas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Press Mancuernas</div></div>'"><div class="exercise-num">1</div><div class="muscle-tag">Pecho</div></div><div class="exercise-body"><div class="exercise-name">Press de Banca con Mancuernas</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">90 seg</span></div><div class="exercise-tip">Más rango de movimiento que con barra.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie — mancuerna)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex1" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex1" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex1" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex1" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('jueves-ex1','jueves')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('jueves-ex1')">📈 Historial</button></div><div class="save-feedback" id="feedback-jueves-ex1">✓ Guardado correctamente</div></div><div class="history-panel" id="history-jueves-ex1"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=600&q=80" alt="Press Arnold" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Press Arnold</div></div>'"><div class="exercise-num">2</div><div class="muscle-tag">Hombros</div></div><div class="exercise-body"><div class="exercise-name">Press Arnold</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">90 seg</span></div><div class="exercise-tip">Rotación completa. Activa las 3 cabezas del deltoides.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex2" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex2" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex2" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex2" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('jueves-ex2','jueves')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('jueves-ex2')">📈 Historial</button></div><div class="save-feedback" id="feedback-jueves-ex2">✓ Guardado correctamente</div></div><div class="history-panel" id="history-jueves-ex2"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1597452485677-d661670d9640?w=600&q=80" alt="Elevaciones frontales" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🙆</div><div class=\'img-fallback-text\'>Elevaciones Frontales</div></div>'"><div class="exercise-num">3</div><div class="muscle-tag">Deltoides Anterior</div></div><div class="exercise-body"><div class="exercise-name">Elevaciones Frontales</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps c/brazo</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Hasta la altura de los ojos. Sin impulso.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex3" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex3" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex3" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('jueves-ex3','jueves')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('jueves-ex3')">📈 Historial</button></div><div class="save-feedback" id="feedback-jueves-ex3">✓ Guardado correctamente</div></div><div class="history-panel" id="history-jueves-ex3"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=80" alt="Polea cruzada" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤸</div><div class=\'img-fallback-text\'>Polea Cruzada</div></div>'"><div class="exercise-num">4</div><div class="muscle-tag">Pecho</div></div><div class="exercise-body"><div class="exercise-name">Aperturas en Polea Cruzada</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Contracción máxima en el centro.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex4" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex4" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex4" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('jueves-ex4','jueves')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('jueves-ex4')">📈 Historial</button></div><div class="save-feedback" id="feedback-jueves-ex4">✓ Guardado correctamente</div></div><div class="history-panel" id="history-jueves-ex4"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1590507621108-433608c97823?w=600&q=80" alt="Press frances" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Press Francés</div></div>'"><div class="exercise-num">5</div><div class="muscle-tag">Tríceps</div></div><div class="exercise-body"><div class="exercise-name">Press Francés Barra EZ</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg</span></div><div class="exercise-tip">Codos fijos. Baja hasta la frente despacio.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex5" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex5" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex5" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('jueves-ex5','jueves')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('jueves-ex5')">📈 Historial</button></div><div class="save-feedback" id="feedback-jueves-ex5">✓ Guardado correctamente</div></div><div class="history-panel" id="history-jueves-ex5"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80" alt="Extension sobre cabeza" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Extensión Cabeza</div></div>'"><div class="exercise-num">6</div><div class="muscle-tag">Tríceps Largo</div></div><div class="exercise-body"><div class="exercise-name">Extensión Sobre Cabeza Mancuerna</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Una mancuerna, ambas manos. Activa cabeza larga.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex6" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex6" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex6" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('jueves-ex6','jueves')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('jueves-ex6')">📈 Historial</button></div><div class="save-feedback" id="feedback-jueves-ex6">✓ Guardado correctamente</div></div><div class="history-panel" id="history-jueves-ex6"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1534368420009-621bfab424a8?w=600&q=80" alt="Elevaciones polea" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🙆</div><div class=\'img-fallback-text\'>Elev. Lateral Polea</div></div>'"><div class="exercise-num">7</div><div class="muscle-tag">Deltoides Lateral</div></div><div class="exercise-body"><div class="exercise-name">Elevaciones Laterales en Polea</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Tensión constante incluso abajo.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex7" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex7" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="jueves" data-exercise="jueves-ex7" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('jueves-ex7','jueves')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('jueves-ex7')">📈 Historial</button></div><div class="save-feedback" id="feedback-jueves-ex7">✓ Guardado correctamente</div></div><div class="history-panel" id="history-jueves-ex7"></div></div></div>
+  </div>
+  <div class="section-title">Cardio — Incline Walk Progresivo</div>
+  <div class="cardio-card"><div class="cardio-title">CAMINADORA — INCLINE WALK</div><p style="font-size:14px;color:var(--gray);line-height:1.6;">Velocidad constante 5 km/h. Inclinación sube cada 10 minutos: 6% → 10% → 12%.</p><div class="cardio-protocol"><div class="protocol-item"><div class="protocol-val">6%</div><div class="protocol-label">Min 0–10</div></div><div class="protocol-item"><div class="protocol-val">10%</div><div class="protocol-label">Min 10–20</div></div><div class="protocol-item"><div class="protocol-val">12%</div><div class="protocol-label">Min 20–30</div></div><div class="protocol-item"><div class="protocol-val">5 km/h</div><div class="protocol-label">Velocidad</div></div></div></div>
+</div>
+
+<!-- VIERNES -->
+<div class="day-panel" id="panel-viernes">
+  <div class="day-name">VIERNES</div>
+  <div class="day-focus">🔙 Jalón II + Core — Espalda · Bíceps · Abdomen</div>
+  <div class="day-meta"><span class="meta-pill highlight">⏱ 2 horas</span><span class="meta-pill">🔥 Alta intensidad</span><span class="meta-pill">8 ejercicios</span></div>
+  <div class="intensity-bar"><div class="intensity-label"><span>Intensidad del día</span><strong>85%</strong></div><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div></div>
+  <div class="timeline"><div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div><div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza + Core</div><div class="tblock-dur">70 min</div></div><div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Tabata</div><div class="tblock-dur">30 min</div></div><div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div></div>
+  <div class="session-summary"><div class="summary-title">📊 Resumen de sesión — Viernes</div><div class="summary-stat"><div class="summary-stat-val" id="sum-viernes-exercises">0/8</div><div class="summary-stat-label">Registrados</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-viernes-vol">0 kg</div><div class="summary-stat-label">Volumen estimado</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-viernes-max">— kg</div><div class="summary-stat-label">Mayor peso</div></div><button class="btn-clear-session" onclick="clearDaySession('viernes')">Limpiar sesión</button></div>
+  <div class="section-title">Bloque de Fuerza + Core — 8 Ejercicios</div>
+  <div class="exercise-grid">
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1566241134883-13eb2393a3cd?w=600&q=80" alt="Dominadas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Dominadas Asistidas</div></div>'"><div class="exercise-num">1</div><div class="muscle-tag">Dorsal</div></div><div class="exercise-body"><div class="exercise-name">Dominadas Asistidas en Máquina</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">8–10 Reps</span><span class="set-badge">90 seg</span></div><div class="exercise-tip">Meta: sin asistencia en mes 3. Reduce contrapeso 5kg c/2 semanas.</div><div class="weight-tracker"><div class="tracker-title">Contrapeso usado (kg — menos = más difícil)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex1" data-serie="0" min="0" step="2.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex1" data-serie="1" min="0" step="2.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex1" data-serie="2" min="0" step="2.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex1" data-serie="3" min="0" step="2.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex1','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex1')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex1">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex1"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=600&q=80" alt="Remo maquina" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Remo Máquina</div></div>'"><div class="exercise-num">2</div><div class="muscle-tag">Espalda Media</div></div><div class="exercise-body"><div class="exercise-name">Remo en Máquina</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg</span></div><div class="exercise-tip">Pecho contra el respaldo. Descansa la zona lumbar.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex2" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex2" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex2" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex2" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex2','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex2')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex2">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex2"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1585152968992-d2b9444408cc?w=600&q=80" alt="Curl polea" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Curl Polea</div></div>'"><div class="exercise-num">3</div><div class="muscle-tag">Bíceps</div></div><div class="exercise-body"><div class="exercise-name">Curl en Polea con Barra Recta</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Tensión constante. Sin soltar en ningún punto.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex3" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex3" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex3" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex3','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex3')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex3">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex3"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=80" alt="Curl concentrado" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Curl Concentrado</div></div>'"><div class="exercise-num">4</div><div class="muscle-tag">Bíceps Pico</div></div><div class="exercise-body"><div class="exercise-name">Curl Concentrado</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps c/brazo</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Codo en el muslo. Gira muñeca hacia afuera arriba.</div><div class="weight-tracker"><div class="tracker-title">Registro de peso (kg por serie)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex4" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex4" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="kg" data-day="viernes" data-exercise="viernes-ex4" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex4','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex4')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex4">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex4"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=80" alt="Plancha" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🧘</div><div class=\'img-fallback-text\'>Plancha Frontal</div></div>'"><div class="exercise-num">5</div><div class="muscle-tag">Core Anterior</div></div><div class="exercise-body"><div class="exercise-name">Plancha Frontal</div><div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">45–60 seg</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Progresa 5 segundos por semana.</div><div class="weight-tracker"><div class="tracker-title">Tiempo sostenido por serie (segundos)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="seg" data-day="viernes" data-exercise="viernes-ex5" data-serie="0" min="0" step="5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="seg" data-day="viernes" data-exercise="viernes-ex5" data-serie="1" min="0" step="5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="seg" data-day="viernes" data-exercise="viernes-ex5" data-serie="2" min="0" step="5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 4</div><input type="number" class="serie-input" placeholder="seg" data-day="viernes" data-exercise="viernes-ex5" data-serie="3" min="0" step="5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex5','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex5')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex5">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex5"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&q=80" alt="Plancha lateral" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🧘</div><div class=\'img-fallback-text\'>Plancha Lateral</div></div>'"><div class="exercise-num">6</div><div class="muscle-tag">Oblicuos</div></div><div class="exercise-body"><div class="exercise-name">Plancha Lateral</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">30 seg c/lado</span><span class="set-badge">45 seg</span></div><div class="exercise-tip">Cadera arriba, cuerpo en línea recta.</div><div class="weight-tracker"><div class="tracker-title">Tiempo sostenido por serie (segundos)</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="seg" data-day="viernes" data-exercise="viernes-ex6" data-serie="0" min="0" step="5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="seg" data-day="viernes" data-exercise="viernes-ex6" data-serie="1" min="0" step="5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="seg" data-day="viernes" data-exercise="viernes-ex6" data-serie="2" min="0" step="5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex6','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex6')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex6">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex6"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=80" alt="Rueda abdominal" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>⚙️</div><div class=\'img-fallback-text\'>Rueda Abdominal</div></div>'"><div class="exercise-num">7</div><div class="muscle-tag">Core Completo</div></div><div class="exercise-body"><div class="exercise-name">Rueda Abdominal (Ab Wheel)</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">8–12 Reps</span><span class="set-badge">75 seg</span></div><div class="exercise-tip">Rango parcial al inicio. No hundas la lumbar.</div><div class="weight-tracker"><div class="tracker-title">Repeticiones completadas por serie</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="reps" data-day="viernes" data-exercise="viernes-ex7" data-serie="0" min="0" step="1" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="reps" data-day="viernes" data-exercise="viernes-ex7" data-serie="1" min="0" step="1" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="reps" data-day="viernes" data-exercise="viernes-ex7" data-serie="2" min="0" step="1" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex7','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex7')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex7">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex7"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=600&q=80" alt="Elevacion piernas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Elevación Piernas</div></div>'"><div class="exercise-num">8</div><div class="muscle-tag">Abdomen Bajo</div></div><div class="exercise-body"><div class="exercise-name">Elevación de Piernas Colgado</div><div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12–15 Reps</span><span class="set-badge">60 seg</span></div><div class="exercise-tip">Lento y controlado. Evita el balanceo.</div><div class="weight-tracker"><div class="tracker-title">Repeticiones completadas por serie</div><div class="series-inputs" style="grid-template-columns:repeat(3,1fr)"><div class="serie-input-wrap"><div class="serie-label">Serie 1</div><input type="number" class="serie-input" placeholder="reps" data-day="viernes" data-exercise="viernes-ex8" data-serie="0" min="0" step="1" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 2</div><input type="number" class="serie-input" placeholder="reps" data-day="viernes" data-exercise="viernes-ex8" data-serie="1" min="0" step="1" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Serie 3</div><input type="number" class="serie-input" placeholder="reps" data-day="viernes" data-exercise="viernes-ex8" data-serie="2" min="0" step="1" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('viernes-ex8','viernes')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('viernes-ex8')">📈 Historial</button></div><div class="save-feedback" id="feedback-viernes-ex8">✓ Guardado correctamente</div></div><div class="history-panel" id="history-viernes-ex8"></div></div></div>
+  </div>
+  <div class="section-title">Cardio — Tabata Bicicleta</div>
+  <div class="cardio-card"><div class="cardio-title">TABATA EN BICICLETA ESTÁTICA</div><p style="font-size:14px;color:var(--gray);line-height:1.6;">4 bloques de 8 rondas. 20s esfuerzo máximo / 10s descanso. 2 min descanso entre bloques.</p><div class="cardio-protocol"><div class="protocol-item"><div class="protocol-val">20s</div><div class="protocol-label">Esfuerzo</div></div><div class="protocol-item"><div class="protocol-val">10s</div><div class="protocol-label">Descanso</div></div><div class="protocol-item"><div class="protocol-val">×8</div><div class="protocol-label">Rondas/bloque</div></div><div class="protocol-item"><div class="protocol-val">×4</div><div class="protocol-label">Bloques</div></div></div></div>
+</div>
+
+<!-- SÁBADO -->
+<div class="day-panel" id="panel-sabado">
+  <div class="day-name">SÁBADO</div>
+  <div class="day-focus">⚡ Full Body Funcional — Máxima quema calórica</div>
+  <div class="day-meta"><span class="meta-pill highlight">⏱ 2 horas</span><span class="meta-pill">🔥 Máxima quema</span><span class="meta-pill">4 rondas de circuito</span></div>
+  <div class="intensity-bar"><div class="intensity-label"><span>Intensidad del día</span><strong>90%</strong></div><div class="bar-track"><div class="bar-fill" style="width:90%"></div></div></div>
+  <div class="timeline"><div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div><div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Circuito ×4</div><div class="tblock-dur">80 min</div></div><div class="timeline-block cardio"><div class="tblock-time">1:30</div><div class="tblock-label">Cardio Suave</div><div class="tblock-dur">20 min</div></div><div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div></div>
+  <div class="session-summary"><div class="summary-title">📊 Resumen de sesión — Sábado</div><div class="summary-stat"><div class="summary-stat-val" id="sum-sabado-exercises">0/4</div><div class="summary-stat-label">Rondas registradas</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-sabado-vol">0 kg</div><div class="summary-stat-label">Volumen estimado</div></div><div class="summary-stat"><div class="summary-stat-val" id="sum-sabado-max">— kg</div><div class="summary-stat-label">Mayor peso</div></div><button class="btn-clear-session" onclick="clearDaySession('sabado')">Limpiar sesión</button></div>
+  <div class="section-title">Circuito Full Body — 4 Rondas · 90 seg descanso entre rondas</div>
+  <div class="exercise-grid">
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=600&q=80" alt="Goblet squat" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Sentadilla Goblet</div></div>'"><div class="exercise-num">1</div><div class="muscle-tag">Piernas · Glúteos</div></div><div class="exercise-body"><div class="exercise-name">Sentadilla Goblet</div><div class="exercise-sets"><span class="set-badge red">15 Reps × 4 rondas</span></div><div class="exercise-tip">Mancuerna al pecho. Talones en el suelo siempre.</div><div class="weight-tracker"><div class="tracker-title">Peso de mancuerna usado (kg por ronda)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Ronda 1</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex1" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 2</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex1" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 3</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex1" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 4</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex1" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('sabado-ex1','sabado')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('sabado-ex1')">📈 Historial</button></div><div class="save-feedback" id="feedback-sabado-ex1">✓ Guardado correctamente</div></div><div class="history-panel" id="history-sabado-ex1"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=600&q=80" alt="Swing" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>⚙️</div><div class=\'img-fallback-text\'>Swing</div></div>'"><div class="exercise-num">2</div><div class="muscle-tag">Cadena Posterior</div></div><div class="exercise-body"><div class="exercise-name">Swing con Kettlebell / Mancuerna</div><div class="exercise-sets"><span class="set-badge red">15 Reps × 4 rondas</span></div><div class="exercise-tip">Fuerza en la cadera, no en los brazos.</div><div class="weight-tracker"><div class="tracker-title">Peso usado (kg por ronda)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Ronda 1</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex2" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 2</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex2" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 3</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex2" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 4</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex2" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('sabado-ex2','sabado')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('sabado-ex2')">📈 Historial</button></div><div class="save-feedback" id="feedback-sabado-ex2">✓ Guardado correctamente</div></div><div class="history-panel" id="history-sabado-ex2"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=80" alt="Remo alterno" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🔙</div><div class=\'img-fallback-text\'>Remo Alterno</div></div>'"><div class="exercise-num">3</div><div class="muscle-tag">Espalda</div></div><div class="exercise-body"><div class="exercise-name">Remo con Mancuerna Alterno</div><div class="exercise-sets"><span class="set-badge red">12 Reps c/lado × 4 rondas</span></div><div class="exercise-tip">Alterna lados sin pausa. Sin apoyo en banco.</div><div class="weight-tracker"><div class="tracker-title">Peso de mancuerna (kg por ronda)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Ronda 1</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex3" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 2</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex3" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 3</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex3" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 4</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex3" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('sabado-ex3','sabado')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('sabado-ex3')">📈 Historial</button></div><div class="save-feedback" id="feedback-sabado-ex3">✓ Guardado correctamente</div></div><div class="history-panel" id="history-sabado-ex3"></div></div></div>
+    <div class="exercise-card"><div class="exercise-img-wrap"><img src="https://images.unsplash.com/photo-1434608519344-49d77a699e1d?w=600&q=80" alt="Zancada reverse" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🚶</div><div class=\'img-fallback-text\'>Zancada Reverse</div></div>'"><div class="exercise-num">4</div><div class="muscle-tag">Glúteos · Cuádriceps</div></div><div class="exercise-body"><div class="exercise-name">Zancada Reverse</div><div class="exercise-sets"><span class="set-badge red">10 Reps c/pierna × 4 rondas</span></div><div class="exercise-tip">Paso hacia atrás. Menos estrés en rodilla.</div><div class="weight-tracker"><div class="tracker-title">Peso mancuernas (kg por ronda)</div><div class="series-inputs"><div class="serie-input-wrap"><div class="serie-label">Ronda 1</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex4" data-serie="0" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 2</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex4" data-serie="1" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 3</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex4" data-serie="2" min="0" step="0.5" onchange="autoSave(this)"></div><div class="serie-input-wrap"><div class="serie-label">Ronda 4</div><input type="number" class="serie-input" placeholder="kg" data-day="sabado" data-exercise="sabado-ex4" data-serie="3" min="0" step="0.5" onchange="autoSave(this)"></div></div><div class="tracker-actions"><button class="btn-save" onclick="saveExercise('sabado-ex4','sabado')">💾 Guardar</button><button class="btn-history" onclick="toggleHistory('sabado-ex4')">📈 Historial</button></div><div class="save-feedback" id="feedback-sabado-ex4">✓ Guardado correctamente</div></div><div class="history-panel" id="history-sabado-ex4"></div></div></div>
+  </div>
+  <div class="section-title">Cardio Final — Recuperación Activa</div>
+  <div class="cardio-card"><div class="cardio-title">CAMINADORA SUAVE</div><p style="font-size:14px;color:var(--gray);line-height:1.6;">20 minutos suaves después del circuito. FC objetivo: 110–120 ppm. Vuelta a la calma.</p><div class="cardio-protocol"><div class="protocol-item"><div class="protocol-val">20'</div><div class="protocol-label">Duración</div></div><div class="protocol-item"><div class="protocol-val">Suave</div><div class="protocol-label">Intensidad</div></div><div class="protocol-item"><div class="protocol-val">120</div><div class="protocol-label">FC objetivo</div></div></div></div>
+</div>
+
+<!-- DOMINGO -->
+<div class="day-panel" id="panel-domingo">
+  <div class="rest-day">
+    <div class="rest-icon">😴</div>
+    <div class="rest-title">DESCANSO TOTAL</div>
+    <p class="rest-desc">El músculo no crece en el gimnasio — crece mientras descansas. La grasa se metaboliza con cortisol bajo. Si entrenas 7 días seguidos en el mes 1, te lesionas en el mes 2 y pierdes 3 semanas.</p>
+    <div class="rest-allowed">
+      <span class="rest-item">🚶 Caminata 30–45 min</span>
+      <span class="rest-item">🧘 Estiramientos suaves</span>
+      <span class="rest-item">🍽️ Meal prep semanal</span>
+      <span class="rest-item">📊 Revisión semanal 15 min</span>
+      <span class="rest-item">💑 Tiempo con tu pareja</span>
+    </div>
+    <div style="margin-top:36px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--yellow);padding:18px;max-width:500px;text-align:left;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;color:var(--yellow);font-weight:700;margin-bottom:8px;text-transform:uppercase;">⚠️ Alerta del Coach</div>
+      <p style="font-size:14px;color:var(--light-gray);line-height:1.6;">Este día NO es opcional. El descanso es parte del plan, no ausencia de él. El progreso se consolida cuando descansas.</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-text">Plan de Alto Rendimiento · Colombia 🇨🇴 → Canadá 🍁</div>
+  <div class="footer-meta">Enero – Junio 2025 · 2h / día · 6 días activos</div>
+</footer>
+
+<script>
+// ===== STORAGE ENGINE =====
+const STORAGE_KEY = 'gym_tracker_v2';
+
+function getStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+function setStorage(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+// ===== SAVE EXERCISE =====
+function saveExercise(exerciseId, day) {
+  const inputs = document.querySelectorAll(`[data-exercise="${exerciseId}"]`);
+  const weights = [];
+  inputs.forEach(inp => { weights.push(parseFloat(inp.value) || 0); });
+  
+  if (weights.every(w => w === 0)) return;
+
+  const storage = getStorage();
+  if (!storage[exerciseId]) storage[exerciseId] = [];
+
+  const today = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+  const existingIdx = storage[exerciseId].findIndex(e => e.date === today);
+  
+  const entry = { date: today, weights, timestamp: Date.now() };
+  if (existingIdx >= 0) storage[exerciseId][existingIdx] = entry;
+  else storage[exerciseId].unshift(entry);
+
+  if (storage[exerciseId].length > 12) storage[exerciseId] = storage[exerciseId].slice(0, 12);
+
+  setStorage(storage);
+  showFeedback(exerciseId);
+  updateDaySummary(day);
+  updateHeaderCount();
+  renderHistory(exerciseId);
+}
+
+// ===== AUTO SAVE =====
+function autoSave(input) {
+  const exerciseId = input.dataset.exercise;
+  const day = input.dataset.day;
+  clearTimeout(window['autosave_' + exerciseId]);
+  window['autosave_' + exerciseId] = setTimeout(() => saveExercise(exerciseId, day), 800);
+}
+
+// ===== FEEDBACK =====
+function showFeedback(exerciseId) {
+  const el = document.getElementById('feedback-' + exerciseId);
+  if (!el) return;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ===== TOGGLE HISTORY =====
+function toggleHistory(exerciseId) {
+  const panel = document.getElementById('history-' + exerciseId);
+  if (!panel) return;
+  if (panel.classList.contains('open')) { panel.classList.remove('open'); return; }
+  renderHistory(exerciseId);
+  panel.classList.add('open');
+}
+
+// ===== RENDER HISTORY =====
+function renderHistory(exerciseId) {
+  const panel = document.getElementById('history-' + exerciseId);
+  if (!panel) return;
+  const storage = getStorage();
+  const entries = storage[exerciseId] || [];
+
+  if (entries.length === 0) {
+    panel.innerHTML = '<div class="history-title">Historial</div><div class="history-empty">Sin registros aún. ¡Completa tu primera sesión!</div>';
+    return;
+  }
+
+  const maxWeight = Math.max(...entries.flatMap(e => e.weights).filter(w => w > 0));
+  let html = '<div class="history-title">📈 Historial de sesiones (últimas 12)</div>';
+
+  entries.forEach((entry, idx) => {
+    const validWeights = entry.weights.filter(w => w > 0);
+    if (validWeights.length === 0) return;
+    const entryMax = Math.max(...validWeights);
+    const isPR = entryMax === maxWeight && idx === entries.findIndex(e => Math.max(...e.weights.filter(w=>w>0)) === maxWeight);
+    
+    html += `<div class="history-entry">
+      <div>
+        <div class="history-date">${entry.date}</div>
+        ${isPR ? '<div class="history-pr">🏆 Mejor marca</div>' : ''}
+      </div>
+      <div class="history-weights">
+        ${entry.weights.map((w, i) => w > 0 ? `<span class="history-weight-badge ${w === maxWeight && isPR ? 'best' : ''}">S${i+1}: ${w}kg</span>` : '').join('')}
+      </div>
+      <button class="btn-del-history" onclick="deleteEntry('${exerciseId}', ${idx})" title="Eliminar registro">✕</button>
+    </div>`;
+  });
+
+  panel.innerHTML = html;
+}
+
+// ===== DELETE ENTRY =====
+function deleteEntry(exerciseId, idx) {
+  const storage = getStorage();
+  if (storage[exerciseId]) {
+    storage[exerciseId].splice(idx, 1);
+    setStorage(storage);
+    renderHistory(exerciseId);
+  }
+}
+
+// ===== DAY SUMMARY =====
+const dayExerciseCounts = { lunes:7, martes:7, miercoles:7, jueves:7, viernes:8, sabado:4 };
+
+function updateDaySummary(day) {
+  const storage = getStorage();
+  const prefix = day + '-ex';
+  const count = dayExerciseCounts[day] || 7;
+  let registered = 0, totalVol = 0, maxW = 0;
+
+  for (let i = 1; i <= count; i++) {
+    const key = prefix + i;
+    const entries = storage[key];
+    if (entries && entries.length > 0) {
+      const latest = entries[0];
+      const validW = latest.weights.filter(w => w > 0);
+      if (validW.length > 0) {
+        registered++;
+        const exMax = Math.max(...validW);
+        const avgW = validW.reduce((a,b) => a+b, 0) / validW.length;
+        totalVol += avgW * validW.length * 10;
+        if (exMax > maxW) maxW = exMax;
+      }
+    }
+  }
+
+  const exEl = document.getElementById(`sum-${day}-exercises`);
+  const volEl = document.getElementById(`sum-${day}-vol`);
+  const maxEl = document.getElementById(`sum-${day}-max`);
+  if (exEl) exEl.textContent = `${registered}/${count}`;
+  if (volEl) volEl.textContent = totalVol > 0 ? `${Math.round(totalVol).toLocaleString()} kg` : '0 kg';
+  if (maxEl) maxEl.textContent = maxW > 0 ? `${maxW} kg` : '— kg';
+}
+
+// ===== CLEAR SESSION =====
+function clearDaySession(day) {
+  if (!confirm(`¿Limpiar los datos de hoy para ${day}? El historial anterior se conserva.`)) return;
+  const count = dayExerciseCounts[day] || 7;
+  for (let i = 1; i <= count; i++) {
+    const inputs = document.querySelectorAll(`[data-exercise="${day}-ex${i}"]`);
+    inputs.forEach(inp => inp.value = '');
+  }
+  updateDaySummary(day);
+}
+
+// ===== HEADER COUNT =====
+function updateHeaderCount() {
+  const storage = getStorage();
+  const dates = new Set();
+  Object.values(storage).forEach(entries => entries.forEach(e => dates.add(e.date)));
+  const el = document.getElementById('total-sessions-header');
+  if (el) el.textContent = dates.size;
+}
+
+// ===== LOAD SAVED DATA =====
+function loadSavedData() {
+  const storage = getStorage();
+  Object.entries(storage).forEach(([exerciseId, entries]) => {
+    if (entries.length === 0) return;
+    const today = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+    const todayEntry = entries.find(e => e.date === today);
+    if (todayEntry) {
+      todayEntry.weights.forEach((w, i) => {
+        const inp = document.querySelector(`[data-exercise="${exerciseId}"][data-serie="${i}"]`);
+        if (inp && w > 0) inp.value = w;
+      });
+    }
+  });
+  ['lunes','martes','miercoles','jueves','viernes','sabado'].forEach(updateDaySummary);
+  updateHeaderCount();
+}
+
+// ===== NAV =====
+function showDay(day, el) {
+  document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + day).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateDaySummary(day);
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', loadSavedData);
+</script>
+</body>
+</html>
