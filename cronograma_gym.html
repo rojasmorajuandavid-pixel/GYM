@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cronograma de Entrenamiento — Plan 5 Meses</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;900&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --dark: #111111;
+    --card: #181818;
+    --border: #252525;
+    --red: #E53935;
+    --red-dark: #b71c1c;
+    --red-glow: rgba(229,57,53,0.15);
+    --yellow: #FFD600;
+    --white: #f5f5f5;
+    --gray: #888;
+    --light-gray: #aaa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--black); color: var(--white); font-family: 'Barlow', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  .header { position: relative; padding: 60px 40px 40px; border-bottom: 1px solid var(--border); overflow: hidden; }
+  .header::after { content: 'GYM'; position: absolute; right: -20px; top: -30px; font-family: 'Bebas Neue', sans-serif; font-size: 220px; color: rgba(255,255,255,0.02); letter-spacing: -10px; user-select: none; pointer-events: none; }
+  .header-tag { display: inline-block; background: var(--red); color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; padding: 4px 12px; margin-bottom: 16px; }
+  .header h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 8vw, 90px); line-height: 0.9; letter-spacing: 2px; }
+  .header h1 span { color: var(--red); }
+  .header-sub { margin-top: 16px; font-size: 15px; color: var(--gray); max-width: 600px; }
+  .stats-row { display: flex; gap: 40px; margin-top: 32px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--red); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+  .week-nav { display: flex; padding: 0 40px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .week-nav::-webkit-scrollbar { display: none; }
+  .day-tab { flex-shrink: 0; padding: 18px 24px; cursor: pointer; border-bottom: 3px solid transparent; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); transition: all 0.2s; }
+  .day-tab:hover { color: var(--white); }
+  .day-tab.active { color: var(--white); border-bottom-color: var(--red); }
+  .rest-badge { display: inline-block; background: #1a1a1a; color: var(--gray); font-size: 9px; padding: 1px 5px; margin-left: 6px; letter-spacing: 1px; }
+  .content { padding: 40px; }
+  .day-panel { display: none; }
+  .day-panel.active { display: block; }
+  .day-name { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 2px; margin-bottom: 4px; }
+  .day-focus { font-size: 13px; color: var(--red); text-transform: uppercase; letter-spacing: 3px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; margin-bottom: 12px; }
+  .day-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+  .meta-pill { background: var(--card); border: 1px solid var(--border); padding: 5px 14px; font-size: 12px; color: var(--light-gray); font-weight: 600; letter-spacing: 1px; }
+  .meta-pill.highlight { background: var(--red-glow); border-color: var(--red); color: var(--red); }
+  .intensity-bar { margin-bottom: 32px; }
+  .intensity-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .intensity-label span { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; font-family: 'Barlow Condensed', sans-serif; }
+  .intensity-label strong { color: var(--red); }
+  .bar-track { height: 4px; background: var(--border); }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--red-dark), var(--red)); position: relative; }
+  .bar-fill::after { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; background: var(--red); border-radius: 50%; box-shadow: 0 0 12px var(--red); }
+  .timeline { display: flex; gap: 8px; margin-bottom: 36px; flex-wrap: wrap; }
+  .timeline-block { flex: 1; min-width: 80px; background: var(--card); border: 1px solid var(--border); padding: 12px; text-align: center; border-top: 3px solid var(--border); }
+  .timeline-block.warm { border-top-color: #FF9800; }
+  .timeline-block.strength { border-top-color: var(--red); }
+  .timeline-block.cardio { border-top-color: #29B6F6; }
+  .timeline-block.stretch { border-top-color: #66BB6A; }
+  .tblock-time { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; }
+  .tblock-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; font-weight: 600; }
+  .tblock-dur { font-size: 11px; color: var(--light-gray); margin-top: 6px; }
+  .section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--gray); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .exercise-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 36px; }
+  .exercise-card { background: var(--card); border: 1px solid var(--border); overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .exercise-card:hover { border-color: var(--red); transform: translateY(-2px); }
+  .exercise-img-wrap { position: relative; height: 200px; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; }
+  .exercise-img-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: transform 0.4s; filter: grayscale(20%) contrast(1.1); }
+  .exercise-card:hover .exercise-img-wrap img { transform: scale(1.05); }
+  .exercise-num { position: absolute; top: 10px; left: 10px; background: var(--red); color: white; font-family: 'Bebas Neue', sans-serif; font-size: 18px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .muscle-tag { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: var(--yellow); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 3px 8px; font-family: 'Barlow Condensed', sans-serif; }
+  .img-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,#1a1a1a,#0f0f0f); flex-direction: column; gap: 8px; }
+  .img-fallback-icon { font-size: 48px; }
+  .img-fallback-text { font-size: 11px; color: var(--gray); letter-spacing: 2px; text-transform: uppercase; }
+  .exercise-body { padding: 16px; }
+  .exercise-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .exercise-sets { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .set-badge { background: #1e1e1e; border: 1px solid var(--border); padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--light-gray); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; }
+  .set-badge.red { border-color: var(--red); color: var(--red); background: var(--red-glow); }
+  .exercise-tip { font-size: 12px; color: var(--gray); line-height: 1.5; border-left: 2px solid var(--border); padding-left: 10px; font-style: italic; }
+  .cardio-card { background: var(--card); border: 1px solid var(--border); border-left: 4px solid #29B6F6; padding: 24px; margin-bottom: 36px; }
+  .cardio-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #29B6F6; letter-spacing: 2px; margin-bottom: 10px; }
+  .cardio-protocol { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 16px; }
+  .protocol-item { background: #0f0f0f; border: 1px solid var(--border); padding: 12px; text-align: center; }
+  .protocol-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #29B6F6; letter-spacing: 1px; }
+  .protocol-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; font-weight: 600; }
+  .rest-day { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 40px; text-align: center; }
+  .rest-icon { font-size: 80px; margin-bottom: 24px; }
+  .rest-title { font-family: 'Bebas Neue', sans-serif; font-size: 64px; letter-spacing: 4px; color: rgba(255,255,255,0.12); margin-bottom: 16px; }
+  .rest-desc { max-width: 500px; font-size: 15px; color: var(--gray); line-height: 1.7; }
+  .rest-allowed { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; justify-content: center; }
+  .rest-item { background: var(--card); border: 1px solid var(--border); padding: 10px 20px; font-size: 13px; color: var(--light-gray); font-weight: 500; }
+  .footer { border-top: 1px solid var(--border); padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .footer-text { font-size: 12px; color: var(--gray); }
+  .footer-meta { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; color: var(--gray); letter-spacing: 2px; text-transform: uppercase; }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .day-panel.active .exercise-card { animation: fadeInUp 0.4s ease both; }
+  .day-panel.active .exercise-card:nth-child(1){animation-delay:.05s}
+  .day-panel.active .exercise-card:nth-child(2){animation-delay:.1s}
+  .day-panel.active .exercise-card:nth-child(3){animation-delay:.15s}
+  .day-panel.active .exercise-card:nth-child(4){animation-delay:.2s}
+  .day-panel.active .exercise-card:nth-child(5){animation-delay:.25s}
+  .day-panel.active .exercise-card:nth-child(6){animation-delay:.3s}
+  .day-panel.active .exercise-card:nth-child(7){animation-delay:.35s}
+  .day-panel.active .exercise-card:nth-child(8){animation-delay:.4s}
+  @media(max-width:768px){.header,.content{padding:24px 20px}.week-nav{padding:0 20px}.exercise-grid{grid-template-columns:1fr}.footer{padding:20px}.stats-row{gap:24px}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-tag">Plan Alto Rendimiento — 5 Meses</div>
+  <h1>CRONOGRAMA<br><span>DE ENTRENAMIENTO</span></h1>
+  <p class="header-sub">2 horas diarias · 6 días activos · Objetivo: −13kg en 5 meses · Fuerza + Cardio Metabólico</p>
+  <div class="stats-row">
+    <div class="stat"><span class="stat-num">2H</span><span class="stat-label">Por sesión</span></div>
+    <div class="stat"><span class="stat-num">6</span><span class="stat-label">Días activos</span></div>
+    <div class="stat"><span class="stat-num">13KG</span><span class="stat-label">Meta a perder</span></div>
+    <div class="stat"><span class="stat-num">5M</span><span class="stat-label">Duración plan</span></div>
+  </div>
+</header>
+
+<nav class="week-nav">
+  <div class="day-tab active" onclick="showDay('lunes',this)">Lunes</div>
+  <div class="day-tab" onclick="showDay('martes',this)">Martes</div>
+  <div class="day-tab" onclick="showDay('miercoles',this)">Miércoles</div>
+  <div class="day-tab" onclick="showDay('jueves',this)">Jueves</div>
+  <div class="day-tab" onclick="showDay('viernes',this)">Viernes</div>
+  <div class="day-tab" onclick="showDay('sabado',this)">Sábado</div>
+  <div class="day-tab" onclick="showDay('domingo',this)">Domingo <span class="rest-badge">DESCANSO</span></div>
+</nav>
+
+<main class="content">
+
+<!-- LUNES -->
+<div class="day-panel active" id="panel-lunes">
+  <div class="day-name">LUNES</div>
+  <div class="day-focus">💪 Empuje — Pecho · Hombros · Tríceps</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Alta intensidad</span>
+    <span class="meta-pill">7 ejercicios</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>85%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:85%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">HIIT</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios</div>
+  <div class="exercise-grid">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1534368420009-621bfab424a8?w=600&q=80" alt="Press de banca" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Press de Banca</div></div>'">
+        <div class="exercise-num">1</div>
+        <div class="muscle-tag">Pecho</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press de Banca con Barra</div>
+        <div class="exercise-sets">
+          <span class="set-badge red">4 Series</span><span class="set-badge">10–12 Reps</span><span class="set-badge">90 seg descanso</span>
+        </div>
+        <div class="exercise-tip">Peso que te cueste las últimas 2 reps. Escápulas retraídas en el banco todo el tiempo.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80" alt="Press inclinado" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Press Inclinado</div></div>'">
+        <div class="exercise-num">2</div>
+        <div class="muscle-tag">Pecho Superior</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press Inclinado Mancuernas</div>
+        <div class="exercise-sets">
+          <span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg descanso</span>
+        </div>
+        <div class="exercise-tip">30–45 grados de inclinación. No bloquees los codos arriba del todo.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=80" alt="Aperturas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤸</div><div class=\'img-fallback-text\'>Aperturas</div></div>'">
+        <div class="exercise-num">3</div>
+        <div class="muscle-tag">Pecho</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Aperturas con Mancuernas</div>
+        <div class="exercise-sets">
+          <span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span>
+        </div>
+        <div class="exercise-tip">Movimiento lento y controlado. Codos ligeramente flexionados en todo el arco.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1567598508481-65985588e295?w=600&q=80" alt="Press militar" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Press Militar</div></div>'">
+        <div class="exercise-num">4</div>
+        <div class="muscle-tag">Hombros</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press Militar con Barra</div>
+        <div class="exercise-sets">
+          <span class="set-badge red">4 Series</span><span class="set-badge">10 Reps</span><span class="set-badge">90 seg descanso</span>
+        </div>
+        <div class="exercise-tip">Core activado. No arquees la espalda baja. La barra pasa frente al mentón al bajar.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1597452485677-d661670d9640?w=600&q=80" alt="Elevaciones laterales" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🙆</div><div class=\'img-fallback-text\'>Elevaciones Laterales</div></div>'">
+        <div class="exercise-num">5</div>
+        <div class="muscle-tag">Deltoides Lateral</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Elevaciones Laterales</div>
+        <div class="exercise-sets">
+          <span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span>
+        </div>
+        <div class="exercise-tip">Peso ligero, forma perfecta. Codos ligeramente doblados. Muñecas neutras.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1590507621108-433608c97823?w=600&q=80" alt="Extensiones tríceps" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Extensiones Tríceps</div></div>'">
+        <div class="exercise-num">6</div>
+        <div class="muscle-tag">Tríceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Extensiones de Tríceps en Polea</div>
+        <div class="exercise-sets">
+          <span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span>
+        </div>
+        <div class="exercise-tip">Codos fijos a los costados todo el movimiento. Contrae al máximo al extender.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80" alt="Fondos en banco" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤾</div><div class=\'img-fallback-text\'>Fondos en Banco</div></div>'">
+        <div class="exercise-num">7</div>
+        <div class="muscle-tag">Tríceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Fondos en Banco</div>
+        <div class="exercise-sets">
+          <span class="set-badge red">3 Series</span><span class="set-badge">12–15 Reps</span><span class="set-badge">60 seg descanso</span>
+        </div>
+        <div class="exercise-tip">Si puedes, coloca peso en las piernas. Baja hasta 90° en el codo, no menos.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="section-title">Cardio Metabólico — HIIT Caminadora</div>
+  <div class="cardio-card">
+    <div class="cardio-title">HIIT EN CAMINADORA</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">5 min calentamiento → 20 min HIIT → 5 min enfriamiento. Alterna 40 seg sprint / 20 seg recuperación durante los 20 minutos centrales. 20 ciclos totales.</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">40s</div><div class="protocol-label">Sprint</div></div>
+      <div class="protocol-item"><div class="protocol-val">20s</div><div class="protocol-label">Recuperación</div></div>
+      <div class="protocol-item"><div class="protocol-val">20</div><div class="protocol-label">Ciclos</div></div>
+      <div class="protocol-item"><div class="protocol-val">30'</div><div class="protocol-label">Total</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MARTES -->
+<div class="day-panel" id="panel-martes">
+  <div class="day-name">MARTES</div>
+  <div class="day-focus">🔙 Jalón — Espalda · Bíceps</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Alta intensidad</span>
+    <span class="meta-pill">7 ejercicios</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>80%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:80%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Cardio Estable</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios</div>
+  <div class="exercise-grid">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=80" alt="Jalón al pecho" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Jalón al Pecho</div></div>'">
+        <div class="exercise-num">1</div><div class="muscle-tag">Dorsal</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Jalón al Pecho en Polea</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10–12 Reps</span><span class="set-badge">90 seg descanso</span></div>
+        <div class="exercise-tip">Pecho arriba, escápulas juntas al bajar. No uses el impulso del cuerpo para jalar.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=600&q=80" alt="Remo con barra" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Remo con Barra</div></div>'">
+        <div class="exercise-num">2</div><div class="muscle-tag">Espalda Media</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Remo con Barra</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10 Reps</span><span class="set-badge">90 seg descanso</span></div>
+        <div class="exercise-tip">Espalda recta, codos pegados al cuerpo. Jala al ombligo, no al pecho.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=80" alt="Remo unilateral" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Remo Unilateral</div></div>'">
+        <div class="exercise-num">3</div><div class="muscle-tag">Dorsal</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Remo Unilateral con Mancuerna</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps c/lado</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Apoyo en banco, rango completo. Rota ligeramente el torso al final del movimiento.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1566241134883-13eb2393a3cd?w=600&q=80" alt="Pullover" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤸</div><div class=\'img-fallback-text\'>Pullover</div></div>'">
+        <div class="exercise-num">4</div><div class="muscle-tag">Dorsal Completo</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Pullover con Mancuerna</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Estira el dorsal completamente. Codos ligeramente doblados en todo el arco del movimiento.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=600&q=80" alt="Jalón agarre neutro" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Jalón Neutro</div></div>'">
+        <div class="exercise-num">5</div><div class="muscle-tag">Espalda Media</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Jalón con Agarre Neutro</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg descanso</span></div>
+        <div class="exercise-tip">Palmas enfrentadas. Activa más el bíceps y la espalda media que el agarre abierto.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1585152968992-d2b9444408cc?w=600&q=80" alt="Curl con barra" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Curl Barra</div></div>'">
+        <div class="exercise-num">6</div><div class="muscle-tag">Bíceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Curl con Barra</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Sin balanceo del cuerpo. Codos fijos a los costados. Aprieta el bíceps arriba.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=80" alt="Curl martillo" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🔨</div><div class=\'img-fallback-text\'>Curl Martillo</div></div>'">
+        <div class="exercise-num">7</div><div class="muscle-tag">Braquial</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Curl Martillo con Mancuernas</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Trabaja braquial y antebrazo. Palmas enfrentadas durante todo el movimiento.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="section-title">Cardio — Estado Estable</div>
+  <div class="cardio-card">
+    <div class="cardio-title">BICICLETA ESTÁTICA — ESTADO ESTABLE</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">Hoy NO es HIIT. La espalda ya trabajó duro. Cardio de estado estable para seguir quemando sin sobrecargar el sistema nervioso central.</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">30'</div><div class="protocol-label">Duración</div></div>
+      <div class="protocol-item"><div class="protocol-val">130</div><div class="protocol-label">FC mínima (ppm)</div></div>
+      <div class="protocol-item"><div class="protocol-val">145</div><div class="protocol-label">FC máxima (ppm)</div></div>
+      <div class="protocol-item"><div class="protocol-val">Cte.</div><div class="protocol-label">Ritmo</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MIÉRCOLES -->
+<div class="day-panel" id="panel-miercoles">
+  <div class="day-name">MIÉRCOLES</div>
+  <div class="day-focus">🦵 Piernas — Cuádriceps · Isquios · Glúteos</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Máxima intensidad</span>
+    <span class="meta-pill">7 ejercicios</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>95%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:95%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Elíptica</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios · El día más importante del plan</div>
+  <div class="exercise-grid">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=600&q=80" alt="Sentadilla" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Sentadilla</div></div>'">
+        <div class="exercise-num">1</div><div class="muscle-tag">Cuádriceps · Glúteos</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Sentadilla con Barra</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10–12 Reps</span><span class="set-badge">2 min descanso</span></div>
+        <div class="exercise-tip">El ejercicio más importante del plan. Rodillas alineadas con los pies, pecho arriba siempre.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=600&q=80" alt="Peso muerto rumano" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Peso Muerto Rumano</div></div>'">
+        <div class="exercise-num">2</div><div class="muscle-tag">Isquios · Glúteos</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Peso Muerto Rumano</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">10 Reps</span><span class="set-badge">90 seg descanso</span></div>
+        <div class="exercise-tip">Barra cerca del cuerpo siempre. Empuja la cadera hacia atrás, no doblas las rodillas en exceso.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=600&q=80" alt="Prensa piernas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦵</div><div class=\'img-fallback-text\'>Prensa de Piernas</div></div>'">
+        <div class="exercise-num">3</div><div class="muscle-tag">Cuádriceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Prensa de Piernas</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12–15 Reps</span><span class="set-badge">90 seg descanso</span></div>
+        <div class="exercise-tip">Pies al ancho de hombros. No bloquees las rodillas al extender completamente.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1434608519344-49d77a699e1d?w=600&q=80" alt="Zancadas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🚶</div><div class=\'img-fallback-text\'>Zancadas</div></div>'">
+        <div class="exercise-num">4</div><div class="muscle-tag">Glúteos · Cuádriceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Zancadas con Mancuernas</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps c/pierna</span><span class="set-badge">75 seg descanso</span></div>
+        <div class="exercise-tip">Paso largo, rodilla no pasa la punta del pie. Torso erguido durante todo el movimiento.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1577221084712-45b0445d2b00?w=600&q=80" alt="Extensión cuádriceps" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦵</div><div class=\'img-fallback-text\'>Extensión Cuádriceps</div></div>'">
+        <div class="exercise-num">5</div><div class="muscle-tag">Cuádriceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Extensión de Cuádriceps</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Movimiento controlado. Pausa de 1 segundo arriba. Baja lentamente en 3 segundos.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=80" alt="Curl isquiotibiales" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦵</div><div class=\'img-fallback-text\'>Curl Isquios</div></div>'">
+        <div class="exercise-num">6</div><div class="muscle-tag">Isquiotibiales</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Curl de Isquiotibiales</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Caderas pegadas al banco. Movimiento lento especialmente en la fase de bajada.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&q=80" alt="Elevación gemelos" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🦶</div><div class=\'img-fallback-text\'>Elevación Gemelos</div></div>'">
+        <div class="exercise-num">7</div><div class="muscle-tag">Gemelos</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Elevación de Gemelos de Pie</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">20 Reps</span><span class="set-badge">45 seg descanso</span></div>
+        <div class="exercise-tip">Rango completo. Pausa de 2 segundos arriba. Baja lentamente hasta sentir el estiramiento.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="section-title">Cardio — Recuperación Activa</div>
+  <div class="cardio-card">
+    <div class="cardio-title">ELÍPTICA O CAMINATA INCLINADA</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">Después de piernas NO es HIIT. Las piernas están agotadas. Elíptica o caminata inclinada al 10% para seguir quemando sin impacto articular adicional.</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">30'</div><div class="protocol-label">Duración</div></div>
+      <div class="protocol-item"><div class="protocol-val">10%</div><div class="protocol-label">Inclinación</div></div>
+      <div class="protocol-item"><div class="protocol-val">5.5</div><div class="protocol-label">km/h</div></div>
+      <div class="protocol-item"><div class="protocol-val">Suave</div><div class="protocol-label">Intensidad</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- JUEVES -->
+<div class="day-panel" id="panel-jueves">
+  <div class="day-name">JUEVES</div>
+  <div class="day-focus">💪 Empuje II — Mayor volumen en Hombros</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Alta intensidad</span>
+    <span class="meta-pill">7 ejercicios</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>80%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:80%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Incline Walk</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="section-title">Bloque de Fuerza — 7 Ejercicios</div>
+  <div class="exercise-grid">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80" alt="Press mancuernas plano" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Press Mancuernas</div></div>'">
+        <div class="exercise-num">1</div><div class="muscle-tag">Pecho</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press de Banca con Mancuernas</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">90 seg descanso</span></div>
+        <div class="exercise-tip">Más rango de movimiento que con barra. Las mancuernas bajan más a los lados del pecho.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=600&q=80" alt="Press Arnold" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Press Arnold</div></div>'">
+        <div class="exercise-num">2</div><div class="muscle-tag">Hombros — 3 Cabezas</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press Arnold</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">90 seg descanso</span></div>
+        <div class="exercise-tip">Rotación completa del hombro. Activa las 3 cabezas del deltoides simultáneamente.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1597452485677-d661670d9640?w=600&q=80" alt="Elevaciones frontales" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🙆</div><div class=\'img-fallback-text\'>Elevaciones Frontales</div></div>'">
+        <div class="exercise-num">3</div><div class="muscle-tag">Deltoides Anterior</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Elevaciones Frontales Alternas</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps c/brazo</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Peso moderado. Sube hasta la altura de los ojos. Sin impulso del cuerpo.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1581009137042-c552e485697a?w=600&q=80" alt="Aperturas polea cruzada" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🤸</div><div class=\'img-fallback-text\'>Polea Cruzada</div></div>'">
+        <div class="exercise-num">4</div><div class="muscle-tag">Pecho</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Aperturas en Polea Cruzada</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Contracción máxima en el centro. Más tensión constante que con mancuernas.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1590507621108-433608c97823?w=600&q=80" alt="Press francés" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Press Francés</div></div>'">
+        <div class="exercise-num">5</div><div class="muscle-tag">Tríceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Press Francés con Barra EZ</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg descanso</span></div>
+        <div class="exercise-tip">Codos fijos, no abras los brazos hacia los lados. Baja despacio hasta la frente.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80" alt="Extensiones sobre cabeza" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Extensión Sobre Cabeza</div></div>'">
+        <div class="exercise-num">6</div><div class="muscle-tag">Tríceps Largo</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Extensiones Sobre Cabeza con Mancuerna</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Una mancuerna con ambas manos. Activa la cabeza larga del tríceps al máximo.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1534368420009-621bfab424a8?w=600&q=80" alt="Elevaciones laterales polea" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🙆</div><div class=\'img-fallback-text\'>Elevaciones Polea</div></div>'">
+        <div class="exercise-num">7</div><div class="muscle-tag">Deltoides Lateral</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Elevaciones Laterales en Polea</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Más tensión constante que con mancuerna. Mantén tensión incluso en el punto más bajo.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="section-title">Cardio — Incline Walk Progresivo</div>
+  <div class="cardio-card">
+    <div class="cardio-title">CAMINADORA CON INCLINACIÓN PROGRESIVA</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">Cardio de bajo impacto articular pero alta quema calórica. La inclinación progresiva mantiene la frecuencia cardíaca elevada sin el desgaste del sprint.</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">6%</div><div class="protocol-label">Min 1–10</div></div>
+      <div class="protocol-item"><div class="protocol-val">10%</div><div class="protocol-label">Min 10–20</div></div>
+      <div class="protocol-item"><div class="protocol-val">12%</div><div class="protocol-label">Min 20–30</div></div>
+      <div class="protocol-item"><div class="protocol-val">5 km/h</div><div class="protocol-label">Velocidad</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIERNES -->
+<div class="day-panel" id="panel-viernes">
+  <div class="day-name">VIERNES</div>
+  <div class="day-focus">🔙 Jalón II + Core — Espalda · Bíceps · Abdomen</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Alta intensidad</span>
+    <span class="meta-pill">8 ejercicios</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>85%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:85%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Fuerza + Core</div><div class="tblock-dur">70 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:20</div><div class="tblock-label">Tabata</div><div class="tblock-dur">30 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="section-title">Bloque de Fuerza + Core — 8 Ejercicios</div>
+  <div class="exercise-grid">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1566241134883-13eb2393a3cd?w=600&q=80" alt="Dominadas asistidas" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Dominadas Asistidas</div></div>'">
+        <div class="exercise-num">1</div><div class="muscle-tag">Dorsal</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Dominadas Asistidas en Máquina</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">8–10 Reps</span><span class="set-badge">90 seg descanso</span></div>
+        <div class="exercise-tip">META: Dominadas sin asistencia en mes 3. Reduce el contrapeso 5kg cada 2 semanas.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=600&q=80" alt="Remo en máquina" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Remo Máquina</div></div>'">
+        <div class="exercise-num">2</div><div class="muscle-tag">Espalda Media</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Remo en Máquina</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">12 Reps</span><span class="set-badge">75 seg descanso</span></div>
+        <div class="exercise-tip">Pecho contra el respaldo. Variante para descansar la zona lumbar del remo con barra.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1585152968992-d2b9444408cc?w=600&q=80" alt="Curl en polea" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Curl Polea</div></div>'">
+        <div class="exercise-num">3</div><div class="muscle-tag">Bíceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Curl en Polea con Barra Recta</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">15 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Tensión constante en todo el rango. No puedes soltar la tensión en ningún punto del movimiento.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=80" alt="Curl concentrado" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Curl Concentrado</div></div>'">
+        <div class="exercise-num">4</div><div class="muscle-tag">Bíceps Pico</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Curl Concentrado</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12 Reps c/brazo</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Máxima contracción. Apoya el codo en el muslo. Gira la muñeca hacia afuera arriba.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=80" alt="Plancha frontal" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🧘</div><div class=\'img-fallback-text\'>Plancha</div></div>'">
+        <div class="exercise-num">5</div><div class="muscle-tag">Core Anterior</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Plancha Frontal</div>
+        <div class="exercise-sets"><span class="set-badge red">4 Series</span><span class="set-badge">45–60 seg</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Progresa 5 segundos por semana. Cadera en línea, no levantes el trasero hacia arriba.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&q=80" alt="Plancha lateral" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🧘</div><div class=\'img-fallback-text\'>Plancha Lateral</div></div>'">
+        <div class="exercise-num">6</div><div class="muscle-tag">Oblicuos</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Plancha Lateral</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">30 seg c/lado</span><span class="set-badge">45 seg descanso</span></div>
+        <div class="exercise-tip">Cadera arriba, cuerpo en línea recta. No dejes caer la cadera a mitad del tiempo.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=80" alt="Rueda abdominal" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>⚙️</div><div class=\'img-fallback-text\'>Rueda Abdominal</div></div>'">
+        <div class="exercise-num">7</div><div class="muscle-tag">Core Completo</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Rueda Abdominal (Ab Wheel)</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">8–12 Reps</span><span class="set-badge">75 seg descanso</span></div>
+        <div class="exercise-tip">Empieza con rango parcial. Espalda recta. No hundas la zona lumbar al extender.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=600&q=80" alt="Elevación piernas colgado" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Elevación Piernas</div></div>'">
+        <div class="exercise-num">8</div><div class="muscle-tag">Abdomen Bajo</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Elevación de Piernas Colgado</div>
+        <div class="exercise-sets"><span class="set-badge red">3 Series</span><span class="set-badge">12–15 Reps</span><span class="set-badge">60 seg descanso</span></div>
+        <div class="exercise-tip">Lento y controlado. Baja sin soltar el control. Evita el balanceo del cuerpo.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="section-title">Cardio — Protocolo Tabata</div>
+  <div class="cardio-card">
+    <div class="cardio-title">TABATA EN BICICLETA ESTÁTICA</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">El protocolo más eficiente para quemar grasa en poco tiempo. 20 seg esfuerzo máximo / 10 seg descanso. 4 bloques de 8 rondas con 2 min de descanso entre bloques.</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">20s</div><div class="protocol-label">Esfuerzo Máx</div></div>
+      <div class="protocol-item"><div class="protocol-val">10s</div><div class="protocol-label">Descanso</div></div>
+      <div class="protocol-item"><div class="protocol-val">×8</div><div class="protocol-label">Rondas/bloque</div></div>
+      <div class="protocol-item"><div class="protocol-val">×4</div><div class="protocol-label">Bloques totales</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SÁBADO -->
+<div class="day-panel" id="panel-sabado">
+  <div class="day-name">SÁBADO</div>
+  <div class="day-focus">⚡ Full Body Funcional — Máxima quema calórica de la semana</div>
+  <div class="day-meta">
+    <span class="meta-pill highlight">⏱ 2 horas</span>
+    <span class="meta-pill">🔥 Máxima quema</span>
+    <span class="meta-pill">4 rondas de circuito</span>
+  </div>
+  <div class="intensity-bar">
+    <div class="intensity-label"><span>Intensidad del día</span><strong>90%</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:90%"></div></div>
+  </div>
+  <div class="timeline">
+    <div class="timeline-block warm"><div class="tblock-time">0:00</div><div class="tblock-label">Activación</div><div class="tblock-dur">10 min</div></div>
+    <div class="timeline-block strength"><div class="tblock-time">0:10</div><div class="tblock-label">Circuito ×4</div><div class="tblock-dur">80 min</div></div>
+    <div class="timeline-block cardio"><div class="tblock-time">1:30</div><div class="tblock-label">Cardio Suave</div><div class="tblock-dur">20 min</div></div>
+    <div class="timeline-block stretch"><div class="tblock-time">1:50</div><div class="tblock-label">Estiramiento</div><div class="tblock-dur">10 min</div></div>
+  </div>
+  <div class="section-title">Circuito Full Body — 4 Rondas completas · 90 seg descanso entre rondas</div>
+  <div class="exercise-grid">
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=600&q=80" alt="Sentadilla goblet" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏋️</div><div class=\'img-fallback-text\'>Sentadilla Goblet</div></div>'">
+        <div class="exercise-num">1</div><div class="muscle-tag">Piernas · Glúteos</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Sentadilla Goblet con Mancuerna</div>
+        <div class="exercise-sets"><span class="set-badge red">15 Reps</span><span class="set-badge">Mancuerna al pecho</span></div>
+        <div class="exercise-tip">Mancuerna al pecho con ambas manos. Talones en el suelo en todo momento.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80" alt="Flexiones" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>💪</div><div class=\'img-fallback-text\'>Flexiones</div></div>'">
+        <div class="exercise-num">2</div><div class="muscle-tag">Pecho · Tríceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Flexiones de Pecho</div>
+        <div class="exercise-sets"><span class="set-badge red">12 Reps</span><span class="set-badge">Rodillas si necesitas</span></div>
+        <div class="exercise-tip">En rodillas al inicio si es necesario. En el mes 2 ya las harás completas sin problemas.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=600&q=80" alt="Remo mancuerna" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🔙</div><div class=\'img-fallback-text\'>Remo Mancuerna</div></div>'">
+        <div class="exercise-num">3</div><div class="muscle-tag">Espalda</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Remo con Mancuerna Alterno</div>
+        <div class="exercise-sets"><span class="set-badge red">12 Reps c/lado</span></div>
+        <div class="exercise-tip">Alterna lados sin pausa. Mantén la velocidad del circuito. Sin apoyo en banco.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1434608519344-49d77a699e1d?w=600&q=80" alt="Zancada reverse" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🚶</div><div class=\'img-fallback-text\'>Zancada Reverse</div></div>'">
+        <div class="exercise-num">4</div><div class="muscle-tag">Glúteos · Cuádriceps</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Zancada Reverse</div>
+        <div class="exercise-sets"><span class="set-badge red">10 Reps c/pierna</span></div>
+        <div class="exercise-tip">Paso hacia atrás. Menos estrés en la rodilla que la zancada hacia adelante.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=80" alt="Plancha con toque" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🧘</div><div class=\'img-fallback-text\'>Plancha Toque</div></div>'">
+        <div class="exercise-num">5</div><div class="muscle-tag">Core · Antirrotación</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Plancha con Toque de Hombro</div>
+        <div class="exercise-sets"><span class="set-badge red">10 Reps c/lado</span></div>
+        <div class="exercise-tip">Caderas estables, no rotan. Pies separados para mayor base de estabilidad.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=600&q=80" alt="Saltos cajón" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>📦</div><div class=\'img-fallback-text\'>Saltos al Cajón</div></div>'">
+        <div class="exercise-num">6</div><div class="muscle-tag">Potencia · Piernas</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Saltos al Cajón o Step</div>
+        <div class="exercise-sets"><span class="set-badge red">10 Reps</span></div>
+        <div class="exercise-tip">Bajo impacto si molestan las rodillas. Siempre baja en control, no saltes hacia abajo.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=600&q=80" alt="Swing kettlebell" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>⚙️</div><div class=\'img-fallback-text\'>Swing Kettlebell</div></div>'">
+        <div class="exercise-num">7</div><div class="muscle-tag">Cadena Posterior</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Swing con Kettlebell o Mancuerna</div>
+        <div class="exercise-sets"><span class="set-badge red">15 Reps</span></div>
+        <div class="exercise-tip">La fuerza viene de la cadera, no de los brazos. Empuje explosivo de glúteos hacia arriba.</div>
+      </div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="exercise-img-wrap">
+        <img src="https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=600&q=80" alt="Burpee" onerror="this.outerHTML='<div class=\'img-fallback\'><div class=\'img-fallback-icon\'>🏃</div><div class=\'img-fallback-text\'>Burpee</div></div>'">
+        <div class="exercise-num">8</div><div class="muscle-tag">Full Body</div>
+      </div>
+      <div class="exercise-body">
+        <div class="exercise-name">Burpee Modificado</div>
+        <div class="exercise-sets"><span class="set-badge red">8 Reps</span><span class="set-badge">Sin salto final</span></div>
+        <div class="exercise-tip">Sin el salto final al inicio. Mes 2: añades el salto. El ejercicio más difícil del circuito.</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="section-title">Cardio Final — Vuelta a la calma</div>
+  <div class="cardio-card">
+    <div class="cardio-title">CARDIO SUAVE + RECUPERACIÓN ACTIVA</div>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;">Después de 4 rondas del circuito tu cuerpo necesita volver gradualmente. Este cardio suave es recuperación activa, no castigo adicional. Prepara el cuerpo para la semana siguiente.</p>
+    <div class="cardio-protocol">
+      <div class="protocol-item"><div class="protocol-val">20'</div><div class="protocol-label">Duración</div></div>
+      <div class="protocol-item"><div class="protocol-val">Suave</div><div class="protocol-label">Intensidad</div></div>
+      <div class="protocol-item"><div class="protocol-val">120</div><div class="protocol-label">FC objetivo (ppm)</div></div>
+      <div class="protocol-item"><div class="protocol-val">Cinta</div><div class="protocol-label">o Bicicleta</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DOMINGO -->
+<div class="day-panel" id="panel-domingo">
+  <div class="rest-day">
+    <div class="rest-icon">😴</div>
+    <div class="rest-title">DESCANSO TOTAL</div>
+    <p class="rest-desc">El músculo no crece en el gimnasio — crece mientras descansas. La grasa se metaboliza mejor con cortisol bajo. El sistema nervioso se recupera. Si entrenas 7 días seguidos el primer mes, te lesionas en el segundo y pierdes 3 semanas.</p>
+    <div class="rest-allowed">
+      <span class="rest-item">🚶 Caminata 30–45 min</span>
+      <span class="rest-item">🧘 Estiramientos suaves</span>
+      <span class="rest-item">🍽️ Meal prep de la semana</span>
+      <span class="rest-item">📊 Revisión semanal 15 min</span>
+      <span class="rest-item">💑 Tiempo con tu pareja</span>
+    </div>
+    <div style="margin-top:40px;background:var(--card);border:1px solid var(--border);border-left:4px solid var(--yellow);padding:20px;max-width:500px;text-align:left;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;color:var(--yellow);font-weight:700;margin-bottom:8px;text-transform:uppercase;">⚠️ Alerta del Coach</div>
+      <p style="font-size:14px;color:var(--light-gray);line-height:1.6;">Este día NO es opcional. Si lo saltas, estás saboteando toda la semana siguiente. El descanso es parte del plan, no ausencia de él. El progreso se consolida cuando descansas.</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-text">Plan de Alto Rendimiento · Colombia 🇨🇴 → Canadá 🍁</div>
+  <div class="footer-meta">Enero – Junio 2025 · 2h / día · 6 días activos</div>
+</footer>
+
+<script>
+function showDay(day, el) {
+  document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + day).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
